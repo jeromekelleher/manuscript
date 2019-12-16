@@ -22,6 +22,7 @@
 
 % method names
 
+\newcommand{\Stdpopsim}{\texttt{Stdpopsim}\xspace}
 \newcommand{\stdpopsim}{\texttt{stdpopsim}\xspace}
 \newcommand{\dadi}{$\partial a \partial i$\xspace}
 \newcommand{\MSMC}{\texttt{MSMC}\xspace}
@@ -214,7 +215,7 @@ command line interface (Fig. \ref{fig:cartoon}C), allowing users with minimal ex
 state-of-the-art simulations. Simulations are output in the “tree sequence”
 format \citep{kelleher2016efficient,kelleher2018efficient,kelleher2019inferring}, which
 contains complete genealogical information about the simulated samples, is
-extremely compact, and can be processed very efficiently using the tskit library
+extremely compact, and can be processed efficiently using the tskit library
 \citep{kelleher2016efficient,kelleher2018efficient}. Currently,
 \stdpopsim uses the  \texttt{msprime} coalescent simulator \citep{kelleher2016efficient}
 as the simulation engine. We plan to include other simulation
@@ -503,7 +504,40 @@ Or, how should discrete population models be mapped onto real-world (continuous)
 The answer depends on determining what is most important for the question at hand.
 
 \section*{Methods}
-\subsection*{Generating the PopSim resource}
+\subsection*{Implementation}
+
+The ``catalog'' is the central element of \stdpopsim, and records
+ properties of species in a systematic manner.
+The catalog current includes up-to-date estimates of
+generation time and overall population
+size, per chromosome recombination and mutation rates, empirical recombination
+maps and demographic models. \Stdpopsim does not perform
+any simulations itself, but rather delegates this task to different
+simulation engines.
+
+Simulations are defined by combining elements from
+the
+
+\Stdpopsim is a Python package with a command line interface (CLI) and
+application programming interface (API), and is distributed via the
+standard PyPI and conda-forge repositories.
+
+
+Currently, the coalescent simulator
+\texttt{msprime}~\citep{kelleher2016efficient} and forwards-simulator
+SLiM~\citep{haller2018tree,haller2019slim} are supported.
+Other engines, such as \texttt{fwdpy11}~\citep{thornton2014c++},
+that output in \texttt{tskit} format may also be supported in the future.
+
+
+The most important element
+of \stdpopsim is its ``catalog'', which systematically organizes information
+about species such as generation times, per-chromosome recombination rates
+and demographic models.
+
+
+any simulations but rather del
+of two essential elements: simulation engines and
 
 \subsection*{Model QC procedures}
 As a consortium we have agreed to a standardized proceedure for model inclusion
@@ -530,18 +564,18 @@ to this point. Further details of our QC process can be found in our
 \subsection*{Workflow for analysis of simulated data}
 To demonstrate the utility of \stdpopsim we created \texttt{Snakemake}
 workflows \citep{koster2012snakemake} that perform demographic inference on
-tree sequence output from our package using a few common software packages. 
-Our choice of \texttt{Snakemake} allows complete reproducibility of the 
+tree sequence output from our package using a few common software packages.
+Our choice of \texttt{Snakemake} allows complete reproducibility of the
 analyses shown and the entire Analysis repository is available from
-\url{https://github.com/popgensims/analysis}. 
+\url{https://github.com/popgensims/analysis}.
 
 We performed demographic analysis for one and two population tasks.
 Our one population task was to infer historical population size over
 time ($N(t)$). This was done using three software packages \stairwayplot
 which uses site frequency spectrum information only \citep{liu2015exploring},
 the SMC based \MSMC~\citep{schiffels2014inferring} which we ran with two different
-sample sizes $n\in (2 , 8)$, and \smcpp~\citep{terhorst2017robust} 
-which combines information from the site frequency spectrum with 
+sample sizes $n\in (2 , 8)$, and \smcpp~\citep{terhorst2017robust}
+which combines information from the site frequency spectrum with
 recombination information as in SMC-based methods. No attempt
 was made at trying to optimize the analysis from
 any particular software package in present case,
@@ -557,22 +591,22 @@ option and used the default number of iterations.
 For the single population task we ran human, HomSap, simulations
 using a variety of models: OutOfAfricaArchaicAdmixture\_5R19, OutOfAfrica\_3G09,
 a constant sized generic model, and a two epoch generic model where the
-population size instantaneously decreases from $N=10^4$ to $N=10^3$ 500 
+population size instantaneously decreases from $N=10^4$ to $N=10^3$ 500
 generations before the present. Each HomSap simulation was run
 using the HapmapII\_GRCh37 genetic maps. For \emph{D. melanogaster}
-we estimated $N(t)$ from an African sample simulated under the DroMel, 
+we estimated $N(t)$ from an African sample simulated under the DroMel,
 African3Epoch\_1S16 model using the Comeron2012\_dm6 map. Finally we ran
 simulations of \emph{A. thaliana} genomes using the AraTha African2Epoch\_1H18
 model under the Salome2012\_TAIR7. For each model, 3 replicate whole genomes were
 simulated and the population size estimated from those data. In all cases we
-set the sample size of the focal population to $N=50$ chromosomes. 
+set the sample size of the focal population to $N=50$ chromosomes.
 
 Following simulation, low recombination portions of chromosomes were masked
 from the analysis in a manner that reflects the ``accessible" subset of sites
 used in empirical population genomic studies \citep[e.g.,][]{danecek20111000,langley2012genomic}.
 Specifically we masked regions of 1cM or greater in the lowest 5th percentile of the empirical
 distribution of recombination, regions which are nearly uniformly absent for
-empirical analysis.  
+empirical analysis.
 
 Our goal for the two population analysis pipeline was to explore two population inference
 on some of the multi-population demographic models implemented in \stdpopsim.
@@ -607,7 +641,7 @@ model is often misspecified. To ground-truth our inference approach, we also con
 inference on a generic IM model that was identical to the model used for inference.
 
 From HomSap we ran replicate whole genome simulations under the model
-and specified taking 20 samples each from the Europe and Africa populations. 
+and specified taking 20 samples each from the Europe and Africa populations.
 For DroMel, runtimes under OutOfAfrica\_2L06 were prohibitively slow for
 running whole genome simulations. Instead we simulated 3 Mb of chromosome 2R.
 and take 50 samples from each of
